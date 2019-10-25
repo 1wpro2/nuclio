@@ -26,6 +26,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"reflect"
 	"strconv"
@@ -656,10 +657,30 @@ func (r *Request) request(fn func(*http.Request, *http.Response)) error {
 		//default token
 		// r.SetHeader("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tbGJkbnYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImRhZmY1YjE4LWVmZTItMTFlOS05NzkwLTAyNjM5NzM4YWRmYyIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.aQiZbO4GtFAb5d75fwDO9F4KS0JowjRiXiKo5bJ5vNSrlvXIZDIuCpvVGmHwwslb8ubCLS3_aJUoz8o72WPCMdleJ32Z9dbYG1WyaeAQ1Rz6tCdfdAGK3uKoKMbJ8hqT7CTSnCOyAyvSwCFDWbLDHczw9Gy2ydhzi_s-lHSCw72PJll5Xwx30mue2oQFqsiPmltw0yGZdhjOVpxGBvXsfYWcOeVJgzpOkILAiBuSKtzgQoay4yYtnIQ9tjYj16NppJ2f23WfdpUDbZ8JeaVYx0igMIzUjPkXwYNixNZJ1FD9s-yLPCTA52UgA4Bf0CkcUtLKqRkqOd-B0IQXyBX94A")
 		// r.headers.Set("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tbGJkbnYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImRhZmY1YjE4LWVmZTItMTFlOS05NzkwLTAyNjM5NzM4YWRmYyIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.aQiZbO4GtFAb5d75fwDO9F4KS0JowjRiXiKo5bJ5vNSrlvXIZDIuCpvVGmHwwslb8ubCLS3_aJUoz8o72WPCMdleJ32Z9dbYG1WyaeAQ1Rz6tCdfdAGK3uKoKMbJ8hqT7CTSnCOyAyvSwCFDWbLDHczw9Gy2ydhzi_s-lHSCw72PJll5Xwx30mue2oQFqsiPmltw0yGZdhjOVpxGBvXsfYWcOeVJgzpOkILAiBuSKtzgQoay4yYtnIQ9tjYj16NppJ2f23WfdpUDbZ8JeaVYx0igMIzUjPkXwYNixNZJ1FD9s-yLPCTA52UgA4Bf0CkcUtLKqRkqOd-B0IQXyBX94A")
-		
+
 		//nuclio token
-		r.headers.Set("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJudWNsaW8iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlY3JldC5uYW1lIjoibnVjbGlvLW51Y2xpby10b2tlbi1reno2NiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJudWNsaW8tbnVjbGlvIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiZWIwNmQ3ZjktZjU3Ni0xMWU5LWEzNjYtMDZiNDAzMGEyNjllIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Om51Y2xpbzpudWNsaW8tbnVjbGlvIn0.DtLyitG4t2VxLS1NJBc63GyFWfaadJEOQXMQ8-hhhodsmY5ELb7wzY-2wVI7s9N5wDwkLZfHn8y1D1qUGj9FZUsmx4xehYy1XlaCAe4_Kc6zkNh1Kmu-3wOB2kQ6hKlX2GQNzIatYxjO7uS3OTPtmcVP0kqE5iBwZDBDq6EI_qquBIFp6lG4WF5LFbUeOWCEGafa0obIs2Iil91w-1MVEgIc7guFrewoO1xbpy44ajNBADiFiqie62VN3eOtUxl-M19t3ZkmSEicLFoq27PlAcSZVTZFItSY--r6gW_KqCpEqkdhFZFPnWINkLKUWr4SPy0z3UVLKN3JJF0Clzsv3g")
-		
+		//secrete, err := exec.Command("kubectl get secrets -n nuclio | grep nuclio-token | cut -f1 -d ' '").Output()
+		//fmt.Print(secrete)
+		//token, err := exec.Command("kubectl describe secret nuclio-nuclio-token-kzz66 -n nuclio | grep -E '^token' | cut -f2 -d':' |  tr -d ' '" ).Output()
+		//fmt.Print(token)
+
+
+
+		if len(strings.TrimSpace(r.headers.Get("Authorization"))) == 0{
+			//token, err := ioutil.ReadFile("~/secrets/kubernetes.io/serviceaccount/" + v1.ServiceAccountTokenKey)
+			token := os.Getenv("NUCLIO_BEARER_TOKEN")
+			fmt.Println(token)
+			//if err != nil {
+			//	fmt.Println(err.Error())
+			//}
+
+			//mergedConfig.BearerToken = string(token)
+			//r.headers.Set("Authorization", "Bearer "+string(token))
+
+		}
+
+		//r.headers.Set("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJudWNsaW8iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlY3JldC5uYW1lIjoibnVjbGlvLW51Y2xpby10b2tlbi1reno2NiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJudWNsaW8tbnVjbGlvIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiZWIwNmQ3ZjktZjU3Ni0xMWU5LWEzNjYtMDZiNDAzMGEyNjllIiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Om51Y2xpbzpudWNsaW8tbnVjbGlvIn0.DtLyitG4t2VxLS1NJBc63GyFWfaadJEOQXMQ8-hhhodsmY5ELb7wzY-2wVI7s9N5wDwkLZfHn8y1D1qUGj9FZUsmx4xehYy1XlaCAe4_Kc6zkNh1Kmu-3wOB2kQ6hKlX2GQNzIatYxjO7uS3OTPtmcVP0kqE5iBwZDBDq6EI_qquBIFp6lG4WF5LFbUeOWCEGafa0obIs2Iil91w-1MVEgIc7guFrewoO1xbpy44ajNBADiFiqie62VN3eOtUxl-M19t3ZkmSEicLFoq27PlAcSZVTZFItSY--r6gW_KqCpEqkdhFZFPnWINkLKUWr4SPy0z3UVLKN3JJF0Clzsv3g")
+
 
 		req.Header = r.headers
 

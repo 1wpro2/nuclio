@@ -106,9 +106,7 @@ func (config *DeferredLoadingClientConfig) ClientConfig() (*restclient.Config, e
 	// content differs from the default config
 	mergedConfig, err := mergedClientConfig.ClientConfig()
 	if token := os.Getenv("BEARER_TOKEN"); len(token) >0 && len(mergedConfig.BearerToken) == 0 {
-		//token := os.Getenv("BEARER_TOKEN")
 		mergedConfig.BearerToken = string(token)
-
 	}
 	switch {
 	case err != nil:

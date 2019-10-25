@@ -17,11 +17,11 @@ limitations under the License.
 package kube
 
 import (
-	"fmt"
-	"github.com/nuclio/logger"
 	"github.com/nuclio/nuclio/pkg/errors"
 	"github.com/nuclio/nuclio/pkg/platform"
 	nuclioio_client "github.com/nuclio/nuclio/pkg/platform/kube/client/clientset/versioned"
+
+	"github.com/nuclio/logger"
 	"k8s.io/client-go/kubernetes"
 	// enable OIDC plugin
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
@@ -67,11 +67,9 @@ func newConsumer(logger logger.Logger, kubeconfigPath string) (*consumer, error)
 }
 
 func (c *consumer) getNuclioClientSet(authConfig *platform.AuthConfig) (nuclioio_client.Interface, error) {
-	fmt.Println("have visited getNuclioClientSet ")
 
 	// if no authentication was passed, can use the generic client. otherwise must create
 	if authConfig == nil {
-	//if authConfig == nil && len(os.Getenv("NUCLIO_BEARER_TOKEN")) == 0 {
 		return c.nuclioClientSet, nil
 	}
 
@@ -83,11 +81,6 @@ func (c *consumer) getNuclioClientSet(authConfig *platform.AuthConfig) (nuclioio
 
 	// set the auth provider config
 	restConfig.BearerToken = authConfig.Token
-   //if authConfig == nil {
-	//		   restConfig.BearerToken = os.Getenv("NUCLIO_BEARER_TOKEN")
-	//   } else {
-	//		   restConfig.BearerToken = authConfig.Token
-	//   }
 
 	return nuclioio_client.NewForConfig(restConfig)
 }

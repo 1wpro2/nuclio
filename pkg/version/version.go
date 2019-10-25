@@ -103,7 +103,6 @@ func readVersionFile(versionInfo *Info) error {
 	versionFilePath := oslib.Getenv(versionFileEnvKey)
 	if versionFilePath == "" {
 		versionFilePath = "/etc/nuclio/version_info.json"
-		// versionFilePath = "/Users/jackie/Projects/go/src/github.com/nuclio/nuclio/version_info.json"
 	}
 	versionFileContents, err := ioutil.ReadFile(versionFilePath)
 	if err != nil {

@@ -26,6 +26,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"reflect"
 	"strconv"
@@ -134,7 +135,7 @@ func NewRequest(client HTTPClient, verb string, baseURL *url.URL, versionedAPIPa
 	}
 	switch {
 	case len(content.AcceptContentTypes) > 0:
-		r.SetHeader("Accept", content.AcceptContentTypes)
+		 r.SetHeader("Accept", content.AcceptContentTypes)
 	case len(content.ContentType) > 0:
 		r.SetHeader("Accept", content.ContentType+", */*")
 	}
@@ -651,6 +652,15 @@ func (r *Request) request(fn func(*http.Request, *http.Response)) error {
 		if r.ctx != nil {
 			req = req.WithContext(r.ctx)
 		}
+
+		if len(strings.TrimSpace(r.headers.Get("Authorization"))) == 0{
+			//token, err := ioutil.ReadFile("~/secrets/kubernetes.io/serviceaccount/" + v1.ServiceAccountTokenKey)
+			token := os.Getenv("BEARER_TOKEN")
+			fmt.Println(token)
+
+			//r.headers.Set("Authorization", "Bearer "+string(token))
+		}
+
 		req.Header = r.headers
 
 		r.backoffMgr.Sleep(r.backoffMgr.CalculateBackoff(r.URL()))

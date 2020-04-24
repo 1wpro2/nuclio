@@ -18,6 +18,7 @@ package clientcmd
 
 import (
 	"io"
+	"os"
 	"sync"
 
 	"github.com/golang/glog"
@@ -104,6 +105,9 @@ func (config *DeferredLoadingClientConfig) ClientConfig() (*restclient.Config, e
 	// load the configuration and return on non-empty errors and if the
 	// content differs from the default config
 	mergedConfig, err := mergedClientConfig.ClientConfig()
+	if token := os.Getenv("BEARER_TOKEN"); len(token) >0 && len(mergedConfig.BearerToken) == 0 {
+		mergedConfig.BearerToken = string(token)
+	}
 	switch {
 	case err != nil:
 		if !IsEmptyConfig(err) {
